@@ -165,7 +165,7 @@ def download_chapters(chapter_links,title):
         manga_images = manga_images.find_all("img")
         for img_index,img in enumerate(manga_images):
             url = img.get("src")
-            filename = f"{img["alt"]}.jpg"  # Change extension as needed
+            filename = f"{img['alt']}.jpg"  # Change extension as needed
             save_as = os.path.join(chapter_directory, filename)
 
             # Download the image
