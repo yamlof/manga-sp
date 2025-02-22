@@ -94,7 +94,7 @@ def search_manga(manga_name):
 
 def get_manga_info(url):
 
-    response = requests.get(url)
+    response = requests.get(url,headers = headers,verify = False)
     soup = BeautifulSoup(response.content, "html.parser")
 
     # Get manga details
@@ -152,8 +152,8 @@ def download_chapters(chapter_links,title):
 
     for chapter_index, chapter in enumerate(chapter_links):
 
-        chapter_link = chapter["href"]
-        chapter_name = chapter.text.replace(" ", "_")
+        chapter_link = chapter["chapterLink"]
+        chapter_name = chapter["chapterTitle"]
         chapter_directory = os.path.join(save_directory,chapter_name)
         os.makedirs(chapter_directory,exist_ok=True)
 
@@ -230,6 +230,7 @@ def get_chapter(chapter_url):
 
 if __name__ == '__main__':
     import argparse
+    import inquirer
 
     parser = argparse.ArgumentParser(description="downloads for manga pages")
     parser.add_argument('--link',type=str,default=None,help="Link of the manga")
@@ -240,7 +241,11 @@ if __name__ == '__main__':
         print("Please provide a manga link using --link")
     else:
         manga_data = search_manga(args.link)
-        manga_info = get_manga_info(manga_data)
+        choices = []
+        for i in manga_data:
+            choices.append(f"{i['title']} ")
+        manga = choices.index(inquirer.prompt([inquirer.List('_',message='choose a manga',choices=choices)])['_'])
+        manga_info = get_manga_info(manga_data[manga]['manga_url'])
         download_chapters(manga_info.chapters,manga_info.title)
         
 
