@@ -135,7 +135,8 @@ def get_manga_info(url):
 
         chapter_js = {
                 "chapterTitle" : chapter_title,
-                "chapterLink" : chapter_link
+                "chapterLink" : chapter_link,
+                "mangaUrl" : url
                 }
 
         chapters_list.append(chapter_js)
