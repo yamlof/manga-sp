@@ -28,57 +28,69 @@ def clear_console():
 
 
 def get_popular_manga():
-
-    hot_manga_page = 1
-    url = f'https://m.manganelo.com/genre-all/{hot_manga_page}?type=topview'
-
-    response = requests.get(url,verify=certifi.where())
-    soup = BeautifulSoup(response.content,"html.parser")
-
-    hot_manga = soup.find_all("div",class_="content-genres-item")
     
+
+    url = "https://mangakakalot.to/hot?sort=default&page=1"
+    response = requests.get(url,headers = headers,verify = False)
+    soup = BeautifulSoup(response.content,"html.parser")
+    
+    
+    hot_manga = soup.select_one("html body div#wrapper div#main div.container div.main_inner.is-single div.manga-list.is-big-sbs div.inner")
+    
+
+    manga_items = hot_manga.find_all("div", class_="item")
+    #print(manga_items)
 
     popular = []
 
-    for manga in hot_manga:
+    for item in manga_items:
 
-        title = manga.select_one(".genres-item-img.bookmark_check ")['title']
-        link = manga.select_one(".genres-item-img.bookmark_check")['href']
-        cover = manga.select_one("img")['src']
+        manga_item_cover = item.select_one("div.item-poster a.manga-poster img.manga-poster-img")['src']
+        manga_item_title = item.select_one("div.item-info h3.manga-name a")['title']
+        manga_url = item.select_one("div.item-info .manga-name a")["href"]
+        
+        base_url = "https://mangakakalot.to"
+        
+        manga_url = base_url+ manga_url
 
         hot_manga = {
-                "cover" : cover,
-                "manga_url" : link,
-                "title" : title
+                "title" : manga_item_title ,
+                "cover" : manga_item_cover ,
+                "manga_url" : manga_url
                 }
 
         popular.append(hot_manga)
 
     return popular
 
-
-
 def search_manga(manga_name):
 
     # Format manga name for URL
-    manga_name = manga_name.replace(" ", "_")
-    base_url = "https://m.manganelo.com/search/story/"
+    manga_name = manga_name.replace(" ", "+")
+    base_url = "https://mangakakalot.to/search?keyword="
     manga_url = base_url + manga_name
 
     # Make request and parse content
     response = requests.get(manga_url,verify=certifi.where())
     soup = BeautifulSoup(response.content, "html.parser")
 
+    manga_src = soup.select_one("html body div#wrapper div#main div.container div.main_inner.is-single div.manga-list.is-big-sbs")
     # Find manga items
-    manga_item = soup.find_all("div",class_="search-story-item")
+    manga_item = manga_src.find_all("div",class_="item")
+    
     manga_choices = []
 
     for manga in manga_item:
 
 
-        title = manga.select_one(".item-img.bookmark_check ")['title']
-        link = manga.select_one(".item-img.bookmark_check")['href']
+        title = manga.select_one("div.item-info h3.manga-name a")['title']
+        link = manga.select_one("div.item-info .manga-name a")['href']
         cover = manga.select_one("img")['src']
+        
+        base_url = "https://mangakakalot.to"
+        
+        link = base_url+ link
+        
         api = {
                 "title" : title ,
                 "cover" : cover ,
@@ -87,7 +99,7 @@ def search_manga(manga_name):
 
         manga_choices.append(api)
 
-
+    #print(manga_choices)
     return manga_choices
 
        
@@ -97,34 +109,64 @@ def get_manga_info(url):
     response = requests.get(url,headers = headers,verify = False)
     soup = BeautifulSoup(response.content, "html.parser")
 
+    #print(soup)
+
     # Get manga details
 
-    manga_details = soup.select_one("html body div.body-site div.container.container-main div.container-main-left")
+    manga_details = soup.select("div.detail-box")
+
+    id = soup.select_one("html body div#wrapper div#main")["data-id"]
+
+    print(id)
+
+#    print(manga_details)
 
     # Get cover images
 
-    cover = manga_details.select_one(".story-info-left")
+    cover = manga_details[0].select_one("div.db-poster")
     cover = cover.find("img")
     cover = cover.get("src")
 
+    print(cover)
+
     # Get title of manga
 
-    details = manga_details.select_one(".story-info-right")
-    title = details.find("h1")
+    details = manga_details[0].select_one("div.db-info")
+    #details = details[0].select("div.line_content")
+    title = details.select_one("div.line.line-top div.line-content")
+    title = title.find('h3').text
+    
+
+    print(title)
     
     # Get author , status and genres
 
-    table = manga_details.select_one(".story-info-right")
-    author = table.select_one(".variations-tableInfo > tbody:nth-child(1) > tr:nth-child(2) > td:nth-child(2) ")
-    status = table.select_one(".variations-tableInfo > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(2)")
-    genres = table.select_one(".variations-tableInfo > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(2)")
+    #table = manga_details[0].select_one(".story-info-right")
+    author = manga_details[0].select_one("div.line:nth-child(2) span.result")
+    author_list = []
+    author = author.find_all('a')
+    for a in author:
+        author_list.append(a.text)
+
+    status = manga_details[0].select_one("div.line:nth-child(3) div.line-content span.result")
+    print(author_list)
+    print(status)
+    genres = manga_details[0].select_one("div.line:nth-child(6) div.line-content span.result")
     genres = genres.find_all("a")
-    print(author)
+#    print(genres)
+
+    response = requests.get(f"https://mangakakalot.to/ajax/manga/list-chapter-volume?id={id}")
+    chapters_soup = BeautifulSoup(response.content, "html.parser")
 
     #Get chapters of manga
 
-    chapters = manga_details.select_one(".panel-story-chapter-list")
-    chapters = chapters.select_one(".row-content-chapter")
+    chapters = chapters_soup.select_one("#list-chapter-en")
+    if chapters:
+        print(id)
+    else:
+        print(requests.HTTPError(f"Error response returned. {response.status_code} {id}: {response.reason}"))
+    #    print(soup)
+    #chapters = chapters.select_one(".row-content-chapter")
     chapters = chapters.find_all("a")
     
     chapters_list = []
@@ -140,8 +182,10 @@ def get_manga_info(url):
                 }
 
         chapters_list.append(chapter_js)
+
+    print(chapters_list)
     
-    manga = Manga(title.text,author.text,cover,status.text,genres,chapters_list)
+    manga = Manga(title,author_list,cover,status.text,genres,chapters_list)
 
     return manga
 
@@ -182,27 +226,34 @@ def download_chapters(chapter_links,title):
 
 def latest_updates():
 
-    url = "https://m.manganelo.com/genre-all-update-latest"
+    url = "https://mangakakalot.to/latest?sort=default&page=1"
     response = requests.get(url,headers = headers,verify = False)
     soup = BeautifulSoup(response.content,"html.parser")
+    
+    
+    latest = soup.select_one("html body div#wrapper div#main div.container div.main_inner.is-single div.manga-list.is-big-sbs div.inner")
+    
 
-    manga_items = soup.find_all("div",class_="content-genres-item")
+    manga_items = latest.find_all("div", class_="item")
+    #print(manga_items)
 
     list_of_latest = []
 
     for item in manga_items:
 
-        manga_item_cover = item.select_one("img")['src']
-        manga_item_title = item.select_one(".genres-item-info h3 a")
-        manga_url = item.select_one(".genres-item-info h3 a")["href"]
+        manga_item_cover = item.select_one("div.item-poster a.manga-poster img.manga-poster-img")['src']
+        manga_item_title = item.select_one("div.item-info h3.manga-name a")['title']
+        manga_url = item.select_one("div.item-info .manga-name a")["href"]
 
         api = {
-                "title" : manga_item_title.text ,
+                "title" : manga_item_title ,
                 "cover" : manga_item_cover ,
                 "manga_url" : manga_url
                 }
 
         list_of_latest.append(api)
+
+    #print(list_of_latest)
 
 
     return list_of_latest
@@ -224,11 +275,13 @@ def get_chapter(chapter_url):
 
         list_of_images.append(img_list)
 
+    
+
     return list_of_images
         
-
+#get_manga_info("https://mangakakalot.to/onepunch-man-40")
 #manga = input("enter manga to download (ensure it is writen well and with spaces) ")
-
+"""
 if __name__ == '__main__':
     import argparse
     import inquirer
@@ -249,5 +302,6 @@ if __name__ == '__main__':
         manga_info = get_manga_info(manga_data[manga]['manga_url'])
         download_chapters(manga_info.chapters,manga_info.title)
         
+"""
 
-latest_updates()
+search_manga("one piece")
