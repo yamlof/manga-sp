@@ -147,6 +147,8 @@ def get_manga_info(url):
     author = author.find_all('a')
     for a in author:
         author_list.append(a.text)
+        
+    author_list = " ".join(author_list)
 
     status = manga_details[0].select_one("div.line:nth-child(3) div.line-content span.result")
     print(author_list)
@@ -188,7 +190,7 @@ def get_manga_info(url):
 
         chapters_list.append(chapter_js)
 
-    print(chapters_list)
+    #print(chapters_list)
     
     manga = Manga(title,author_list,cover,status.text,genres,chapters_list)
 
@@ -324,5 +326,7 @@ if __name__ == '__main__':
         download_chapters(manga_info.chapters,manga_info.title)
         
 """
-get_chapter("https://mangakakalot.to/read/blue-lock-225/en/chapter-295")
+#get_chapter("https://mangakakalot.to/read/blue-lock-225/en/chapter-295")
 #search_manga("one piece")
+
+get_manga_info("https://mangakakalot.to/blue-lock-225")
