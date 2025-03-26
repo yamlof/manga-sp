@@ -170,6 +170,11 @@ def get_manga_info(url):
     chapters = chapters.find_all("a")
     
     chapters_list = []
+    
+    base_url = "https://mangakakalot.to"
+        
+    link = base_url+ url
+
 
     for chapter in chapters:
         chapter_title = chapter.text
@@ -178,7 +183,7 @@ def get_manga_info(url):
         chapter_js = {
                 "chapterTitle" : chapter_title,
                 "chapterLink" : chapter_link,
-                "mangaUrl" : url
+                "mangaUrl" : link
                 }
 
         chapters_list.append(chapter_js)
@@ -238,12 +243,18 @@ def latest_updates():
     #print(manga_items)
 
     list_of_latest = []
+    
+    base_url = "https://mangakakalot.to"
+        
+        
 
     for item in manga_items:
 
         manga_item_cover = item.select_one("div.item-poster a.manga-poster img.manga-poster-img")['src']
         manga_item_title = item.select_one("div.item-info h3.manga-name a")['title']
         manga_url = item.select_one("div.item-info .manga-name a")["href"]
+        
+        manga_url = base_url+ manga_url 
 
         api = {
                 "title" : manga_item_title ,
@@ -261,12 +272,22 @@ def latest_updates():
 def get_chapter(chapter_url):
     response = requests.get(chapter_url)
     soup = BeautifulSoup(response.content, "html.parser")
-    manga_images = soup.select_one("html body div.body-site div.container-chapter-reader")
-    manga_images = manga_images.find_all("img")
+    manga_images = soup.select_one("html body.reading div#wrapper div#reading div.reading-inner div#list-image.container-chapter-reader")
+    #print(manga_images)
+    reading_id = soup.select_one("html body.reading div#wrapper div#reading")['data-reading-id']
+    reading_type = soup.select_one("html body.reading div#wrapper div#reading")['data-reading-type']
+    
+    img_request = requests.get(f"https://mangakakalot.to/ajax/manga/images?id={reading_id}&type={reading_type}")
+    soup = BeautifulSoup(img_request.content, "html.parser")
+    print(soup)
+    
+    
     list_of_images = []
-    for img in manga_images:
-        img_name = img['alt']
-        img_link = img['src']
+    manga_images = soup.find_all('div',class_='card-wrap')
+    print(manga_images)
+    for idx,img in enumerate(manga_images):
+        img_name = f"image{idx+1}"
+        img_link = img.get('data-url')
 
         img_list = {
                 "imgTitle" : img_name,
@@ -276,7 +297,7 @@ def get_chapter(chapter_url):
         list_of_images.append(img_list)
 
     
-
+    print(list_of_images)
     return list_of_images
         
 #get_manga_info("https://mangakakalot.to/onepunch-man-40")
@@ -303,5 +324,5 @@ if __name__ == '__main__':
         download_chapters(manga_info.chapters,manga_info.title)
         
 """
-
-search_manga("one piece")
+get_chapter("https://mangakakalot.to/read/blue-lock-225/en/chapter-295")
+#search_manga("one piece")
