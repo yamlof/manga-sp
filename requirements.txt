@@ -33,6 +33,3 @@ wsproto==1.2.0
 xmod==1.8.1
 flask==3.1.0
 flask-cors==5.0.0
-cloudscraper==1.2.71
-selenium==4.33.0
-webdriver-manager==4.0.2
