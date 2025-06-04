@@ -1,11 +1,12 @@
-from src.main import get_manga_info, download_chapters, search_manga
-
-# !/usr/bin/env python3
 
 import sys
-import os
 import argparse
+import os
+import time
 
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def show_help():
     """Show usage information"""
@@ -63,12 +64,24 @@ def run_manga_scraper():
 
         # Step 2: Prepare choices for inquirer
         choices = [f"{i['title']}" for i in manga_data]
+
+
+        sys.stdout.flush()
+        clear_screen()
         print(f"📚 Found {len(choices)} manga(s)")
+        time.sleep(0.1)
 
         # Step 3: Ask user to choose a manga
-        answer = inquirer.prompt([
-            inquirer.List('selection', message='Choose a manga', choices=choices)
-        ])
+        question = [
+            inquirer.List(
+                'selection',
+                message='Choose a manga',
+                choices=choices,
+                carousel=True  # optional: allows circular scrolling
+            )
+        ]
+        answer = inquirer.prompt(question)
+        clear_screen()
 
         if not answer:
             print("❌ No manga selected.")
