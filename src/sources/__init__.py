@@ -1,0 +1,1 @@
+from src.sources.mangakakalot.Mangakakalot import MangakakalotSource
