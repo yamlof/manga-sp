@@ -96,7 +96,7 @@ class Mangabat(MangaSource):
     def get_manga_info(self, url):
         # Import here to avoid circular import
 
-        from ..models import Manga
+        from src.models import Manga
 
         #body > div.container > div.main-wrapper > div.leftCol
 
@@ -165,7 +165,6 @@ class Mangabat(MangaSource):
 
         session.cookies.update(cookies)
 
-        scraper = cloudscraper.create_scraper()
         response = session.get(manga_url,headers=self.headers)
 
         # Check if Cloudflare blocked us

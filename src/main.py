@@ -1,3 +1,4 @@
+
 from eta import ETA
 import requests,os
 from src.models import MangaSource
@@ -188,44 +189,3 @@ def download_manga_chapters(manga_url: str, start_chapter: int = None, end_chapt
 
     download_chapters(chapters, manga_info.title, manager)
     print(f"✅ Finished downloading chapters for {manga_info.title}")
-
-if __name__ == '__main__':
-    import argparse
-    import inquirer
-
-    # Assuming these functions are defined/imported elsewhere
-    # from your_module import search_manga, get_manga_info, download_chapters
-
-    parser = argparse.ArgumentParser(description="Downloads manga pages")
-    parser.add_argument('--link', type=str, default=None, help="Link of the manga")
-    args = parser.parse_args()
-
-    if args.link is None:
-        print("❗ Please provide a manga link using --link")
-        exit(1)
-
-    # Step 1: Search for manga based on the link
-    manga_data = search_manga(args.link)
-    if not manga_data:
-        print("⚠️ No manga found for the given link.")
-        exit(1)
-
-    # Step 2: Prepare choices for inquirer
-    choices = [f"{i['title']}" for i in manga_data]
-
-    # Step 3: Ask user to choose a manga
-    answer = inquirer.prompt([
-        inquirer.List('_', message='Choose a manga', choices=choices)
-    ])
-
-    if not answer:
-        print("❌ No manga selected.")
-        exit(1)
-
-    # Step 4: Find selected manga info
-    selected_index = choices.index(answer['_'])
-    selected_manga = manga_data[selected_index]
-    manga_info = get_manga_info(selected_manga['manga_url'])
-
-    # Step 5: Download chapters
-    download_chapters(manga_info.chapters, manga_info.title)
