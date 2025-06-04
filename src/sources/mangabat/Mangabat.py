@@ -1,7 +1,7 @@
 from abc import ABC
 
 import certifi
-import requests,cloudscraper
+import requests
 from bs4 import BeautifulSoup
 from flask import session
 
