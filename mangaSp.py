@@ -3,6 +3,7 @@ import sys
 import argparse
 import os
 import time
+from pprint import pprint
 
 
 def clear_screen():
@@ -11,14 +12,17 @@ def clear_screen():
 def show_help():
     """Show usage information"""
     print("""
+    
 Usage:
   python3 run.py [manga_name]
   python3 run.py --link [manga_name]
 
 Examples:
-  python3 run.py Ichi
-  python3 run.py --link "One Piece"
-  python3 run.py
+  python3 run.py Frieren
+  python3 run.py "One Piece"
+  
+  Don't do:
+  python3 run.py Solo Levelling
 
 If no manga name is provided, you'll be prompted to enter one.
 """)
@@ -38,7 +42,7 @@ def run_manga_scraper():
         return
 
     parser = argparse.ArgumentParser(description="Downloads manga pages")
-    parser.add_argument('--link', type=str, default=None, help="Name/link of the manga to search")
+    parser.add_argument('--name', type=str, default=None, help="Bane of the manga to search")
     parser.add_argument('manga_name', nargs='?', help="Manga name (alternative to --link)")
 
     args = parser.parse_args()
@@ -81,7 +85,7 @@ def run_manga_scraper():
             )
         ]
         answer = inquirer.prompt(question)
-        clear_screen()
+        pprint(answer)
 
         if not answer:
             print("❌ No manga selected.")
@@ -108,7 +112,7 @@ def run_manga_scraper():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] in ["-h", "--help", "help"]:
+    if len(sys.argv) > 1 and sys.argv[1] in ["-h", "--help"]:
         show_help()
     else:
         run_manga_scraper()
