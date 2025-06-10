@@ -79,7 +79,6 @@ class MangakakalotSource(MangaSource):
         return manga_choices
 
     def get_manga_info(self, url: str):
-        # Import here to avoid circular import
 
         from ..models import Manga
 

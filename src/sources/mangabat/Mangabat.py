@@ -94,18 +94,13 @@ class Mangabat(MangaSource):
         return list_of_latest
 
     def get_manga_info(self, url):
-        # Import here to avoid circular import
-
         from src.models import Manga
-
-        #body > div.container > div.main-wrapper > div.leftCol
 
         response = requests.get(url, headers=self.headers)
         soup = BeautifulSoup(response.content, "html.parser")
 
         manga_details = soup.select("body div.container div.main-wrapper div.leftCol")
 
-        # Get title of manga
         details = manga_details[0].select_one("div.manga-info-top div.manga-info-content ul.manga-info-text")
         title = details.select_one("li h1").text.strip()
         print(title)
@@ -160,14 +155,12 @@ class Mangabat(MangaSource):
 
         cookies = {
             'cf_clearence': 'W78LDaQlBSWM2bMqhfa0B5WPQYdYAmyZeMCTPtvDZpA-1748995952-1.2.1.1-QHl.UydtOjd6Kip78UKWPbq1I.eO7QpSJKQfso5TsbQfbEeO1goHSFpq9oQHI2k4LMOOMxb0uUkCb7PkUBUaqcDb4p4z6sJj5ZQLMeYCfWMlPZReDWR9x9J7imyFZwxdX0wG5LJ.oPmt1zu4oi.QSm2klO7oQdhRJ0FQuXufwhPXKhQuSDcM6tRAfHmba4p8mkW5u3tUy3zsP3NNhTvdIwHDVJsny7Dm6ICCNa90.w3WR4Rc6kTZK74N5Iyn4sqLI0bcP1sYwTRUHOliU5MXU.ZvJOqe.clIX1Tw_DOET60V4pNSpDzKpe5ECT8bo4jm_15DcsHevK99wpOyYGCwg2Codu2DtB6eK8cE5JLzkgl7yVJvulgFZnlAT3SkpQBn',
-
         }
 
         session.cookies.update(cookies)
 
         response = session.get(manga_url,headers=self.headers)
 
-        # Check if Cloudflare blocked us
         if "Just a moment..." in response.text or "Enable JavaScript and cookies" in response.text:
             raise Exception("Blocked by Cloudflare. cloudscraper failed to bypass.")
 
@@ -191,8 +184,6 @@ class Mangabat(MangaSource):
             manga_choices.append(api)
 
         return manga_choices
-
-
 
 if __name__ == "__main__":
     source = Mangabat()

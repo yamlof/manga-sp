@@ -11,9 +11,9 @@ class MangaSourceManager:
     def __init__(self):
         self.sources = {
             'mangakakalot': MangakakalotSource(),
-            'mangabat': Mangabat(),  # Add new sources here
+            'mangabat': Mangabat(),
         }
-        self.current_source = 'mangabat'  # Default source
+        self.current_source = 'mangabat'
 
     def set_source(self, source_name: str):
         if source_name in self.sources:
@@ -79,7 +79,6 @@ def latest_updates(source_manager: MangaSourceManager = None):
 
 
 def download_chapters(chapter_links, title, source_manager=None):
-    """Download all chapters of a manga"""
     if source_manager is None:
         source_manager = MangaSourceManager()
 
@@ -97,7 +96,6 @@ def download_chapters(chapter_links, title, source_manager=None):
 
         eta.print_status(current=chapter_index, extra=f"Downloading chapter {chapter_index + 1}: {chapter_link}")
 
-        # Use the source manager to get chapter images
         images = source_manager.get_current_source().get_chapter_images(chapter_link)
 
         if not images:
@@ -111,7 +109,6 @@ def download_chapters(chapter_links, title, source_manager=None):
             save_as = os.path.join(chapter_directory, img_name)
 
             try:
-                # Use the source's headers
                 headers = source_manager.get_current_source().headers
                 img_response = requests.get(img_url, headers=headers)
                 if img_response.status_code == 200:
@@ -125,58 +122,35 @@ def download_chapters(chapter_links, title, source_manager=None):
 
         eta.print_status(current=chapter_index + 1, extra=f"Chapter {chapter_index + 1} done")
 
-    eta.done()  # Final message
+    eta.done()
     print(f"\n✅ Finished downloading all chapters of '{title}'.")
 
 def download_manga(manga_name: str, source_name: str = 'mangakakalot', chapter_range=None):
-    """
-    High-level function to search and download a manga
 
-    Args:
-        manga_name: Name of the manga to search for
-        source_name: Which source to use ('mangakakalot', etc.)
-        chapter_range: Optional tuple (start, end) to download specific chapters
-    """
-    # Create source manager
     manager = MangaSourceManager()
     manager.set_source(source_name)
 
-    # Search for manga
     search_results = search_manga(manga_name, manager)
 
     if not search_results:
         print(f"No manga found for '{manga_name}'")
         return
 
-    # If multiple results, you might want to add selection logic here
-    # For now, just take the first result
     selected_manga = search_results[0]
     print(f"Downloading: {selected_manga['title']}")
 
-    # Get manga info
     manga_info = get_manga_info(selected_manga['manga_url'], manager)
 
-    # Filter chapters if range specified
     chapters_to_download = manga_info.chapters
     if chapter_range:
         start, end = chapter_range
         chapters_to_download = manga_info.chapters[start:end]
 
-    # Download chapters
     download_chapters(chapters_to_download, manga_info.title, manager)
     print(f"✅ Finished downloading {manga_info.title}")
 
 def download_manga_chapters(manga_url: str, start_chapter: int = None, end_chapter: int = None,
                             source_name: str = 'mangakakalot'):
-    """
-    Download specific chapters from a manga URL
-
-    Args:
-        manga_url: Direct URL to the manga
-        start_chapter: Starting chapter index (0-based)
-        end_chapter: Ending chapter index (0-based, exclusive)
-        source_name: Which source to use
-    """
     manager = MangaSourceManager()
     manager.set_source(source_name)
 

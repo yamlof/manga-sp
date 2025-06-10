@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="df7fa629-e077-4b8b-a9e2-a5cb478e39e5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mangaSp.py" beforeDir="false" afterPath="$PROJECT_DIR$/mangaSp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sources/mangabat/Mangabat.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/sources/mangabat/Mangabat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sources/mangakakalot/Mangakakalot.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/sources/mangakakalot/Mangakakalot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,11 +59,24 @@
       <option name="presentableId" value="Default" />
       <updated>1749150278447</updated>
       <workItem from="1749150279509" duration="4303000" />
-      <workItem from="1749299974954" duration="1801000" />
+      <workItem from="1749299974954" duration="2151000" />
+      <workItem from="1749483208920" duration="1793000" />
+      <workItem from="1749549725103" duration="575000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main.py</url>
+          <line>1</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
