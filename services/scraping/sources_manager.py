@@ -7,9 +7,9 @@ class MangaSourceManager:
     def __init__(self):
         self.sources = {
             'mangakakalot': MangakakalotSource(),
-            'mangabat': Mangabat(),  # Add new sources here
+            'mangabat': Mangabat(),  
         }
-        self.current_source = 'mangabat'  # Default source
+        self.current_source = 'mangabat'
 
     def set_source(self, source_name: str):
         if source_name in self.sources:
