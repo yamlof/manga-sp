@@ -1,8 +1,8 @@
 from flask import Blueprint, request,jsonify
 from services.manga_service import get_popular_manga, search_manga,latest_updates,get_manga_info,get_chapter
+from models.models import Manga ,db
 
 manga_bp = Blueprint("manga", __name__)
-
 
 @manga_bp.route('/hello',methods=['GET'])
 def test():
@@ -20,9 +20,22 @@ def manga_info():
     
     if not manga_url:
         return jsonify({"error": "mangainfo parameter is missingo"}),400
+    
+    manga_from_db = Manga.query.filter_by(url=manga_url).first()
+    
+    if manga_from_db:
+        print("manga in db")
+        return {
+            "title" : manga_from_db.title ,
+            "url" : manga_from_db.url,
+            "cover" : manga_from_db.cover,
+            "status" : manga_from_db.status,
+            "author" : manga_from_db.author,
+            "chapters" :[c.serialize() for c in list(manga_from_db.chapters)] 
+        }
 
 
-    print("received ",manga_url)
+    print("scraping from website ",manga_url)
    
     manga = get_manga_info(manga_url)
     
@@ -31,11 +44,13 @@ def manga_info():
 
     return jsonify({
         "title" : manga.title ,
+        "url" : manga.url,
         "cover" : manga.cover,
         "status" : manga.status,
         "author" : manga.author,
-        "chapters" :manga.chapters
+        "chapters" :[c.serialize() for c in list(manga.chapters)]
         })
+
 
 @manga_bp.route('/chapter',methods=['GET'])
 def chapter():

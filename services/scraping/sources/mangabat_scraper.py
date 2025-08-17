@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from services.scraping.base import MangaSource
+from models.models import Manga
 
 
 class Mangabat(MangaSource):
@@ -91,7 +92,8 @@ class Mangabat(MangaSource):
     def get_manga_info(self, url):
         # Import here to avoid circular import
 
-        from models.models import Manga
+        from models.models import Manga,Chapter
+        from config.db import db
 
         #body > div.container > div.main-wrapper > div.leftCol
 
@@ -109,21 +111,13 @@ class Mangabat(MangaSource):
         cover = manga_details[0].select_one("div.manga-info-top div.manga-info-pic img")['src']
 
         # Get author, status and genres
-        author = manga_details[0].select_one("li:nth-of-type(2)")
-        author_list = []
-        author = author.find_all('a')
-        for a in author:
-            author_list.append(a.text)
-        author_list = " ".join(author_list)
-        #p#rint(author_list)
+        author_tags = manga_details[0].select_one("li:nth-of-type(2)").find_all('a')
+        author_str = ", ".join([a.text.strip() for a in author_tags])
 
         status = manga_details[0].select_one("li:nth-of-type(3)").text.replace("Status :", "").strip()
         genre_tags = manga_details[0].select_one("li.genres").select("a")
-        genres = [g.text.strip() for g in genre_tags]
-        #print(status)
-        #print(genres)
-
-        # chapter > div > div.chapter-list
+        genres_str = ", ".join([g.text.strip() for g in genre_tags])
+        
 
         # Get chapters of manga
         chapters = manga_details[0].select_one("div.chapter div.manga-info-chapter div.chapter-list")
@@ -144,7 +138,28 @@ class Mangabat(MangaSource):
             }
             chapters_list.append(chapter_js)
 
-        manga = Manga(title, author_list, cover, status, genres, chapters_list)
+        manga = Manga()
+        manga.title = title
+        manga.url = url
+        manga.author = author_str
+        manga.cover = cover
+        manga.status = status
+        manga.genres = genres_str
+        
+        chapters_html = manga_details[0].select("div.chapter div.manga-info-chapter div.chapter-list div.row")
+        for ch_html in chapters_html:
+            chapter_title = ch_html.select_one("span a").text.strip()
+            chapter_link = ch_html.select_one("span a")['href']
+
+            chapter = Chapter()  # no arguments
+            chapter.title = chapter_title
+            chapter.number = None  # optional: extract number if needed
+            chapter.url = chapter_link
+            manga.chapters.append(chapter)
+            
+            
+        db.session.add(manga)
+        db.session.commit()
         return manga
 
     def search_manga(self, query):

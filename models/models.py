@@ -1,26 +1,62 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List
+from config.db import db
+from datetime import datetime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 MangaDict = Dict[str, str]
 ChapterDict = Dict[str, str]
 ImageDict = Dict[str, str]
 Headers = Dict[str, str]
 
-class Manga:
-    def __init__(self, title, author, cover, status, genres, chapters):
-        self.title = title
-        self.author = author
-        self.cover = cover
-        self.status = status
-        self.genres = genres
-        self.chapters = chapters
+class Manga(db.Model):
+    __tablename__ = "manga"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    url = db.Column(db.String(255))
+    author = db.Column(db.String(255))
+    cover = db.Column(db.String(500))
+    status = db.Column(db.String(50))
+    genres = db.Column(db.String(500))
+
+    chapters : Mapped[List["Chapter"]]  = relationship("Chapter", back_populates="manga")
 
     def __repr__(self):
-        return (
-            f"Manga(title={self.title!r}, author={self.author!r}, "
-            f"cover={self.cover!r}, status={self.status!r}, "
-            f"genres={self.genres!r}, chapters={self.chapters!r})"
-        )
+        return f"<Manga {self.title}>"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "author": self.author,
+            "cover": self.cover,
+            "status": self.status,
+            "genres": self.genres.split(",") if self.genres else [],
+            "chapters": [c.serialize() for c in self.chapters]
+        }
+        
+    
+        
+class Chapter(db.Model):
+    __tablename__ = "chapters"
+
+    id = db.Column(db.Integer, primary_key=True)
+    manga_id = db.Column(db.Integer, db.ForeignKey("manga.id"), nullable=False)
+    title = db.Column(db.String(255))
+    number = db.Column(db.String(50))
+    url = db.Column(db.String(500), unique=True)
+    
+    manga = db.relationship("Manga", back_populates="chapters")
+
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "number": self.number,
+            "url": self.url,
+        }
 
 class MangaSource(ABC):
     """ Abstract base class for manga sources """
@@ -53,3 +89,4 @@ class MangaSource(ABC):
     def get_latest_updates(self) -> List[MangaDict]:
         """Get latest manga updates"""
         pass
+
