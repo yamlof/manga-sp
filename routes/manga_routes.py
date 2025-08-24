@@ -1,6 +1,6 @@
 from flask import Blueprint, request,jsonify
 from services.manga_service import get_popular_manga, search_manga,latest_updates,get_manga_info,get_chapter
-from models.models import Manga ,db
+from models.models import Manga ,db  
 
 manga_bp = Blueprint("manga", __name__)
 
@@ -31,7 +31,7 @@ def manga_info():
             "cover" : manga_from_db.cover,
             "status" : manga_from_db.status,
             "author" : manga_from_db.author,
-            "chapters" :[c.serialize() for c in list(manga_from_db.chapters)] 
+            "chapters" :[c.serialize() for c in sorted(manga_from_db.chapters, key=lambda c: c.number or 0)]
         }
 
 
@@ -48,7 +48,7 @@ def manga_info():
         "cover" : manga.cover,
         "status" : manga.status,
         "author" : manga.author,
-        "chapters" :[c.serialize() for c in list(manga.chapters)]
+        "chapters" :[c.serialize() for c in sorted(manga.chapters, key=lambda c: c.number or 0)]
         })
 
 

@@ -52,7 +52,7 @@ class Mangabat(MangaSource):
         manga_images_container = soup.select_one("html body div.container-chapter-reader")
 
         list_of_images = []
-        manga_images = manga_images_container.find_all('img') # pyright: ignore[reportOptionalMemberAccess]
+        manga_images = manga_images_container.find_all('img')
 
         for idx, img in enumerate(manga_images):
             img_name = f"image{idx}"
