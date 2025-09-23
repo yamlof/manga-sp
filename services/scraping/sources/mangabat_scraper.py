@@ -68,11 +68,11 @@ class Mangabat(MangaSource):
 
     def get_latest_updates(self):
         url = f"{self.base_url}/manga-list/latest-manga?page=1"
-        response = requests.get(url, headers=self.headers)
+        response = requests.get(url, headers=self.headers,verify=False)
         soup = BeautifulSoup(response.content, "html.parser")
 
-        latest = soup.select_one("html body div.container div.main-wrapper div.leftCol.listCol div.truyen-list")
-        manga_items = latest.find_all("div", class_="list-truyen-item-wrap")
+        latest = soup.select_one("html body div.container div.main-wrapper div.leftCol.listCol div.comic-list")
+        manga_items = latest.find_all("div", class_="list-comic-item-wrap")
         #print(manga_items)
         list_of_latest = []
         for item in manga_items:
