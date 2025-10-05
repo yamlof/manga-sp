@@ -31,25 +31,20 @@ class MangaSource(ABC):
 
     @abstractmethod
     def get_popular_manga(self) -> List[MangaDict]:
-        """Get List of popular manga"""
         pass
 
     @abstractmethod
     def search_manga(self,manga_name:str) -> List[MangaDict]:
-        """Search for manga by name"""
         pass
 
     @abstractmethod
     def get_manga_info(self,url:str):
-        "Get detail manga information including chapters"
         pass
 
     @abstractmethod
     def get_chapter_images(self,chapters_url:str) -> List[ImageDict]:
-        """Get images from a chapter"""
         pass
 
     @abstractmethod
     def get_latest_updates(self) -> List[MangaDict]:
-        """Get latest manga updates"""
         pass
