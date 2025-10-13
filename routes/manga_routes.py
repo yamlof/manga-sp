@@ -47,11 +47,12 @@ def manga_info():
 @manga_bp.route('/chapter',methods=['GET'])
 def chapter():
     chapterUrl = request.args.get('chapterUrl')
+    source = request.args.get('source','mangabat')
     
     if chapterUrl is None:
         return jsonify({"error": "Missing mangaString parameter"}), 400
 
-    chapter = get_chapter(chapterUrl)
+    chapter = get_chapter(chapterUrl,source=source)
 
     return jsonify(chapter)
 

@@ -4,6 +4,7 @@ from services.scraping.base import MangaSource
 from typing import Dict, List
 from services.scraping.base import MangaDict,ImageDict
 from urllib.parse import urlencode
+from playwright.sync_api import sync_playwright
 
 
 class MangaFire(MangaSource):
@@ -218,8 +219,54 @@ class MangaFire(MangaSource):
         #document.querySelector("#manga-page > div.manga-detail > div.container > div")
         return manga
 
-    def get_chapter_images(self, chapters_url: str) -> List[ImageDict]:
-        return []
+    def get_chapter_images(self, chapters_url: str):
+        ajax_url = None
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(user_agent=self.headers.get("User-Agent"))
+            page = context.new_page()
+
+            # Intercept network requests
+            def handle_route(route, request):
+                nonlocal ajax_url
+                if "ajax/read" in request.url:
+                    if "vrf=" in request.url:
+                        ajax_url = request.url
+                    route.continue_()
+                else:
+                    route.continue_()
+
+            context.route("**/*", handle_route)
+            page.goto(chapters_url, wait_until="networkidle")
+
+            # Wait until we captured the AJAX URL
+            for _ in range(20):  # 20 tries, 1 second apart
+                if ajax_url:
+                    break
+                page.wait_for_timeout(1000)
+
+            browser.close()
+
+            if not ajax_url:
+                raise Exception("Failed to capture AJAX URL with vrf token")
+
+            # Fetch JSON from ajax_url
+            response = requests.get(ajax_url, headers=self.headers)
+            data = response.json()  # matches PageListDto
+            pages = []
+            for idx, img in enumerate(data["result"]["images"]):
+                url = img[0]
+                offset = img[2]
+                if offset > 0:
+                    url = f"{url}#SCRAMBLED_{offset}"  # same logic as Kotlin
+                pages.append({
+                    "imgTitle": f"Page{idx}",
+                    "imgLink": url
+                    })
+                
+            print(pages)
+            return pages
         
 if __name__ == '__main__':
     service = MangaFire()
