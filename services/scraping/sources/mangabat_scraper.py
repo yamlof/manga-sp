@@ -23,7 +23,7 @@ class Mangabat(MangaSource):
 
         hot_manga = soup.select_one(
             "body > div.container > div.main-wrapper > div > div")
-        manga_items = hot_manga.find_all("div", class_="list-truyen-item-wrap")
+        manga_items = hot_manga.find_all("div", class_="list-comic-item-wrap")
 
         print(manga_items[0])
 
@@ -147,6 +147,7 @@ class Mangabat(MangaSource):
         manga.genres = genres_str
         
         chapters_html = manga_details[0].select("div.chapter div.manga-info-chapter div.chapter-list div.row")
+        
         for ch_html in chapters_html:
             chapter_title = ch_html.select_one("span a").text.strip()
             chapter_link = ch_html.select_one("span a")['href']

@@ -10,34 +10,25 @@ def test():
 
 @manga_bp.route('/latest',methods=['GET'])
 def latest():
-    api = latest_updates()
+    
+    source = request.args.get('source','mangabat')
+    
+    api = latest_updates(source)
     print("API data:",api)
     return jsonify(api)
 
 @manga_bp.route('/manga_info',methods=['GET','POST'])
 def manga_info():
     manga_url = request.args.get('mangaInfo')
+    source_name = request.args.get('source', 'mangabat')
+
     
     if not manga_url:
         return jsonify({"error": "mangainfo parameter is missingo"}),400
-    
-    manga_from_db = Manga.query.filter_by(url=manga_url).first()
-    
-    if manga_from_db:
-        print("manga in db")
-        return {
-            "title" : manga_from_db.title ,
-            "url" : manga_from_db.url,
-            "cover" : manga_from_db.cover,
-            "status" : manga_from_db.status,
-            "author" : manga_from_db.author,
-            "chapters" :[c.serialize() for c in sorted(manga_from_db.chapters, key=lambda c: c.number or 0)]
-        }
-
 
     print("scraping from website ",manga_url)
    
-    manga = get_manga_info(manga_url)
+    manga = get_manga_info(url=manga_url,source=source_name)
     
     if manga is None:
         return jsonify({"error": "Manga not found"}), 404
@@ -48,6 +39,7 @@ def manga_info():
         "cover" : manga.cover,
         "status" : manga.status,
         "author" : manga.author,
+        "genres" : [str(g) for g in getattr(manga, "genres", [])],
         "chapters" :[c.serialize() for c in sorted(manga.chapters, key=lambda c: c.number or 0)]
         })
 
@@ -63,20 +55,23 @@ def chapter():
 
     return jsonify(chapter)
 
-@manga_bp.route('/popular', methods=['GET'])
+@manga_bp.route('/popular', methods=['GET','POST'])
 def popular():
+    
+    source = request.args.get('source','mangabat')
 
-    popular = get_popular_manga()
+    popular = get_popular_manga(source)
 
     return jsonify(popular)
 
-@manga_bp.route('/search', methods=['GET'])
+@manga_bp.route('/search', methods=['GET','POST'])
 def search():
     mangaString = request.args.get('mangaString')
-    
+    source_name = request.args.get('source', 'mangabat')
+
     if mangaString is None:
         return jsonify({"error": "Missing mangaString parameter"}), 400
 
-    mangas = search_manga(mangaString)
+    mangas = search_manga(mangaString,source=source_name)
 
     return jsonify(mangas)

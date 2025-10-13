@@ -45,7 +45,7 @@ class Chapter(db.Model):
     manga_id = db.Column(db.Integer, db.ForeignKey("manga.id"), nullable=False)
     title = db.Column(db.String(255))
     number = db.Column(db.String(50))
-    url = db.Column(db.String(500), unique=True)
+    url = db.Column(db.String(500))
     
     manga = db.relationship("Manga", back_populates="chapters")
 
