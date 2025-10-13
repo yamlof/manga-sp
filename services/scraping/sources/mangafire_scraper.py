@@ -265,7 +265,6 @@ class MangaFire(MangaSource):
                     "imgLink": url
                     })
                 
-            print(pages)
             return pages
         
 if __name__ == '__main__':
