@@ -1,4 +1,4 @@
-import requests,re,quickjs
+import requests,re,quickjs,json
 from bs4 import BeautifulSoup
 from services.scraping.base import MangaSource
 from typing import Dict, List
@@ -227,45 +227,59 @@ class MangaFire(MangaSource):
             context = browser.new_context(user_agent=self.headers.get("User-Agent"))
             page = context.new_page()
 
-            # Intercept network requests
             def handle_route(route, request):
                 nonlocal ajax_url
-                if "ajax/read" in request.url:
-                    if "vrf=" in request.url:
-                        ajax_url = request.url
-                    route.continue_()
-                else:
-                    route.continue_()
+                if "ajax/read" in request.url and "vrf=" in request.url:
+                    ajax_url = request.url
+                route.continue_()
 
             context.route("**/*", handle_route)
             page.goto(chapters_url, wait_until="networkidle")
 
-            # Wait until we captured the AJAX URL
-            for _ in range(20):  # 20 tries, 1 second apart
+            for _ in range(20):  # up to 20 seconds
                 if ajax_url:
                     break
                 page.wait_for_timeout(1000)
 
             browser.close()
 
-            if not ajax_url:
-                raise Exception("Failed to capture AJAX URL with vrf token")
+        if not ajax_url:
+            raise Exception("Failed to capture AJAX URL with vrf token")
 
-            # Fetch JSON from ajax_url
+        print(f"[DEBUG] Captured ajax_url: {ajax_url}")
+
+        # Fetch JSON safely
+        try:
             response = requests.get(ajax_url, headers=self.headers)
-            data = response.json()  # matches PageListDto
-            pages = []
-            for idx, img in enumerate(data["result"]["images"]):
-                url = img[0]
-                offset = img[2]
-                if offset > 0:
-                    url = f"{url}#SCRAMBLED_{offset}"  # same logic as Kotlin
-                pages.append({
-                    "imgTitle": f"Page{idx}",
-                    "imgLink": url
-                    })
-                
-            return pages
+            response.raise_for_status()
+            data = response.json()
+        except Exception as e:
+            raise Exception(f"Failed to fetch or parse JSON: {e}")
+
+        print(json.dumps(data, indent=2))  # for debugging
+
+        result = data.get("result")
+        if not result:
+            raise Exception(f"Missing 'result' in response: {data}")
+
+        # Kotlin PageListDto -> images list
+        images = result.get("images")
+        if not images:
+            raise Exception(f"Missing 'images' in response: {result}")
+
+        pages = []
+        for idx, img in enumerate(images):
+            # Kotlin: Image(it[0].content, it[2].int)
+            url = img[0]
+            offset = img[2] if len(img) > 2 else 0
+            if offset > 0:
+                url = f"{url}#SCRAMBLED_{offset}"
+            pages.append({
+                "imgTitle": f"Page{idx+1}",
+                "imgLink": url
+            })
+
+        return pages
         
 if __name__ == '__main__':
     service = MangaFire()

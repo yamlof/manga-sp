@@ -71,7 +71,8 @@ class Mangabat(MangaSource):
         response = requests.get(url, headers=self.headers,verify=False)
         soup = BeautifulSoup(response.content, "html.parser")
 
-        latest = soup.select_one("html body div.container div.main-wrapper div.leftCol.listCol div.comic-list")
+        latest = soup.select_one("body div.container div.main-wrapper div div")
+        print(latest)
         manga_items = latest.find_all("div", class_="list-comic-item-wrap")
         #print(manga_items)
         list_of_latest = []
